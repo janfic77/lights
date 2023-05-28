@@ -1,0 +1,5 @@
+zvetsit 1.3x
+vypln 0
+rezim vaza
+spodni perimetry 0
+vyska vrstvy 0.1
