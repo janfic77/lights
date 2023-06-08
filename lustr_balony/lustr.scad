@@ -27,7 +27,7 @@ blok_vnitrni_vyska        = blok_vyska - blok_dno_vyska;
 
 
 rameno_delka              = 90;  // Celková vzdalenost kabelu od stredu je rameno_delka + blok_vnitrni_prumer/2
-rameno_sirka              = 20;
+rameno_sirka              = 40;
 rameno_vyska              = 15;
 rameno_polomer            = 2;
 rameno_pocet              = 3;
@@ -39,7 +39,8 @@ rameno_vybrani_vyska      = 10;
 rameno_vybrani_sirka      = 8;
 rameno_vybrani_polomer    = 2;
 
-rameno_sroub_vzdalenost   = 15;
+rameno_sroub_zahloubeni   = 5;
+rameno_sroub_vzdalenost   = 10;
 rameno_matka_zahloubeni   = 8;
 rameno_vyska_bez_vybrani  = rameno_vyska - rameno_vybrani_vyska;
 
@@ -52,13 +53,17 @@ rameno_kruh_zaobleni      = 10;
 sokl_prumer               = blok_vnitrni_prumer - zvetseni_otvoru_3d_tisk*4;
 sokl_vyska                = blok_vnitrni_vyska  - zvetseni_otvoru_3d_tisk;
 sokl_sirka_steny          = 6;
+sokl_vysunuti             = 0.2;
 
-hacek_sirka               = 35;
-hacek_vyska               = 3;
+hacek_sirka               = 22;
+hacek_vyska               = 2;
 hacek_sroub_prumer        = 6;
 
+hmozdinka_prumer          = 25;
+hmozdinka_zahloubeni      = 3;
+
 kabel_prumer              = 25;
-kabel_vzdalenost_od_hacku = 42;
+kabel_vzdalenost_od_hacku = 40;
 kabel_pocet_otvoru        = 3;
 kabel_otvor_otoceni       = 60;  // stupnu
 
@@ -97,30 +102,37 @@ module sokl(){
         translate([0, 0, -sokl_vyska-sokl_sirka_steny])
         cylinder(r=sokl_prumer/2-sokl_sirka_steny, h=sokl_vyska);
       }
-      // Sloupek pro hacek
-      translate([0, 0, -(hacek_vyska+sokl_sirka_steny)])
-      cylinder(r=hacek_sirka/2+sokl_sirka_steny, h=hacek_vyska+sokl_sirka_steny);
+      // Zesileni soklu pro srouby do hmozdinek
+      for (i = [0:kabel_pocet_otvoru-1]){
+        rotate([0,0,i*kabel_otvor_uhel+kabel_otvor_otoceni])
+        translate([kabel_vzdalenost_od_hacku, 0, -(hacek_vyska+sokl_sirka_steny)])
+        cylinder(r=hacek_sirka/2+sokl_sirka_steny, h=hacek_vyska+sokl_sirka_steny);
+      }
     }
-  
-    // Otvor ve sloupku pro hacek
-    translate([0, 0, -hacek_vyska+1])
-    cylinder(r=hacek_sirka/2, h=hacek_vyska+1);
 
-    // Otvor pro soub na hacek
-    translate([0, 0, -sokl_vyska*2])
-    cylinder(r=hacek_sroub_prumer/2, h=sokl_vyska*3);
+    // Otvor pro kabel
+    translate([0, 0, -sokl_sirka_steny*2])
+    cylinder(r=kabel_prumer/2, h=sokl_sirka_steny*3);
 
-    // Otvory pro kabel
+    // Otvory pro srouby k prisroubovani
     for (i = [0:kabel_pocet_otvoru-1]){
       rotate([0,0,i*kabel_otvor_uhel+kabel_otvor_otoceni])
       translate([kabel_vzdalenost_od_hacku, 0, -sokl_sirka_steny*2])
-      cylinder(r=kabel_prumer/2, h=sokl_sirka_steny*3);
+      cylinder(r=hacek_sroub_prumer/2, h=sokl_sirka_steny*3);
     }
+
+    // Zahlohubeni pro hmozdinky
+    for (i = [0:kabel_pocet_otvoru-1]){
+      rotate([0,0,i*kabel_otvor_uhel+kabel_otvor_otoceni])
+      translate([kabel_vzdalenost_od_hacku, 0, -hmozdinka_zahloubeni])
+      cylinder(r=hmozdinka_prumer/2, h=hmozdinka_zahloubeni*3);
+    }
+
     // Vybrani pro kabely
     for (i = [0:rameno_pocet-1]){
       rotate([0,0,i*rameno_uhel+ramena_otoceni])
-      translate([blok_vnitrni_prumer/2-25, -rameno_sirka-6, -sokl_vyska*2])
-      cube([rameno_delka, rameno_sirka*2-3, sokl_vyska*3]);
+      translate([blok_vnitrni_prumer/2-25, -(rameno_sirka/2)-6, -sokl_vyska*2])
+      cube([rameno_delka, rameno_sirka-3, sokl_vyska*3]);
     }
   }
 } // sokl
@@ -157,39 +169,73 @@ module blok(zjednoduseny = 0){
         } else {
           // otvory pro ramena
           translate([blok_vnitrni_prumer/2, 0, 0])
-          rameno(obrys = 1, zvetseni = 1);
+          rameno(obrys = 1, zvetseni = 0.4);
         }
-        // otvor pro sroub pro prisroubovani ramena
-        translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, 0, -rameno_vyska])
-        sroub_m4_otvor_pro_valec(delka_sroub = blok_vyska-rameno_vyska-1, delka_hlava = rameno_vyska);
-        // otvor pro matku - bocni pruchod
-        translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost+2, 0, -rameno_vyska-matka_m4_zahloubeni-zvetseni_otvoru_3d_tisk-rameno_matka_zahloubeni])
+        translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, -rameno_sirka/3, -rameno_vyska-matka_m4_zahloubeni-zvetseni_otvoru_3d_tisk-rameno_matka_zahloubeni])
         rotate([0,0,180])
-        sroub_m4_matka_plus_bocni_pruchod(pruchod_delka = blok_vnitrni_prumer, matka_vyska = matka_m4_zahloubeni);
+        sroub_m4_sroub_matka_bocni_pruchod(sroub_delka                 = 0,
+                                           sroub_delka_horni           = 20,
+                                           sroub_delka_spodni          = 6,
+                                           pruchod_delka               = blok_vnitrni_prumer,
+                                           zaslepit_pro_3d_tisk_horni  = 1,
+                                           zaslepit_pro_3d_tisk_spodni = 0);
+        translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, rameno_sirka/3, -rameno_vyska-matka_m4_zahloubeni-zvetseni_otvoru_3d_tisk-rameno_matka_zahloubeni])
+        rotate([0,0,180])
+        sroub_m4_sroub_matka_bocni_pruchod(sroub_delka                 = 0,
+                                           sroub_delka_horni           = 20,
+                                           sroub_delka_spodni          = 6,
+                                           pruchod_delka               = blok_vnitrni_prumer,
+                                           zaslepit_pro_3d_tisk_horni  = 1,
+                                           zaslepit_pro_3d_tisk_spodni = 0);
       }
     }
-    if (zjednoduseny == 0) {
+    if (zjednoduseny == 0) 
+    {
       // Otvory pro bajonety
       for (i = [0:bajonet_pocet-1]){
+        translate([0, 0, sokl_vysunuti])
         rotate([0,0,i*bajonet_uhel+bajonet_otoceni])
         bajonet_otvor(zvetseni = zvetseni_otvoru_3d_tisk);
       }
-      // Otvory pro stahovaci pasky
+      // Otvory pro stahovaci pasky - svisle
       for (i = [0:rameno_pocet-1]){
         rotate([0,0,i*rameno_uhel+ramena_otoceni])
         translate([blok_vnitrni_prumer/2, 0, -rameno_vyska-4])
         rotate([0,90,0])
         stahovaci_pasek_otvor();
       }
+      // Otvory pro stahovaci pasky - ve dne bloku
+      for (i = [0:rameno_pocet-1]){
+        rotate([0,0,i*rameno_uhel+ramena_otoceni])
+        translate([blok_vnitrni_prumer/2-15, 0, -blok_vnitrni_vyska+2])
+        rotate([0,0,0])
+        stahovaci_pasek_otvor();
+      }
+      // Otvory pro stahovaci pasky - ve dne bloku
+      for (i = [0:rameno_pocet-1]){
+        rotate([0,0,i*rameno_uhel+ramena_otoceni])
+        translate([blok_vnitrni_prumer/2-30, 0, -blok_vnitrni_vyska+2])
+        rotate([0,0,0])
+        stahovaci_pasek_otvor();
+      }
+    }
+  }
+  // Vnitrni kruh pro ohraniceni kabelu
+  difference(){
+    translate([0, 0, -blok_vyska+1])
+    cylinder(r=sokl_prumer/2-sokl_sirka_steny-1, h=blok_vyska-sokl_sirka_steny-12);
+
+    translate([0, 0, -blok_vyska*2])
+    cylinder(r=sokl_prumer/2-sokl_sirka_steny-3, h=blok_vyska*3);
+
+    for (i = [0:rameno_pocet-1]){
+      rotate([0,0,i*rameno_uhel+ramena_otoceni])
+      // otvory pro ramena
+      translate([blok_vnitrni_prumer/2-25, -rameno_sirka/2, -sokl_vyska*2])
+      cube([rameno_delka, rameno_sirka, sokl_vyska*3]);
     }
   }
 
-  // zaslepeni otvoru pro sroub/matku pro 3d tisk
-  for (i = [0:rameno_pocet-1]){
-    rotate([0,0,i*rameno_uhel+ramena_otoceni])
-    translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, 0, -rameno_vyska-zvetseni_otvoru_3d_tisk-rameno_matka_zahloubeni])
-    cylinder(r=4, h=vyska_vrstvy);
-  }
 } // blok
 
 
@@ -214,7 +260,6 @@ module rameno(obrys = 0, zvetseni = 1){
             cube([rameno_delka+100, rameno_sirka+20, rameno_vyska*2]);
           }
           // kruh na ramene
-          //difference()
           {
             translate([rameno_kruh_poloha, 0, -rameno_vyska-obrys_zvetseni])
             resize([(rameno_kruh_prumer/2+obrys_zvetseni)*2+rameno_kruh_prodlouzeni,(rameno_kruh_prumer/2+obrys_zvetseni)*2,rameno_vyska+obrys_zvetseni*2])
@@ -223,9 +268,6 @@ module rameno(obrys = 0, zvetseni = 1){
             } else {
               cylinder(r=rameno_kruh_prumer/2+obrys_zvetseni, h=rameno_vyska+obrys_zvetseni*2);
             }
-            // vnitrni oriznuti
-//             translate([-blok_vnitrni_prumer/2, 0, -blok_vyska*2])
-//             cylinder(r=blok_prumer/2-10-obrys_zvetseni, h=blok_vyska*3);
           }
         }
         if (obrys == 0) {
@@ -266,9 +308,12 @@ module rameno(obrys = 0, zvetseni = 1){
       }
     }
     if (obrys == 0) {
-      // otvor pro sroub
-      translate([rameno_sroub_vzdalenost, 0, -rameno_vybrani_vyska-1])
-      sroub_m4_otvor_pro_zapustnou_hlavu(delka_sroub = rameno_vyska, delka_hlava = rameno_vyska);
+      // otvor pro sroub 1
+      translate([rameno_sroub_vzdalenost, -rameno_sirka/3, -rameno_sroub_zahloubeni])
+      sroub_m4_otvor_pro_valec(delka_sroub = rameno_vyska, delka_hlava = rameno_vyska, zaslepit_pro_3d_tisk = 0);
+      // otvor pro sroub 2
+      translate([rameno_sroub_vzdalenost,  rameno_sirka/3, -rameno_sroub_zahloubeni])
+      sroub_m4_otvor_pro_valec(delka_sroub = rameno_vyska, delka_hlava = rameno_vyska, zaslepit_pro_3d_tisk = 0);
       // otvor pro kabel
       translate([rameno_delka, 0, -rameno_vyska*2])
       cylinder(r=rameno_vybrani_sirka/2, h=rameno_vyska*3);
@@ -291,9 +336,15 @@ module ramena(){
 module srouby(){
 
   for (i = [0:rameno_pocet-1]){
+    // Sroub 1
     rotate([0,0,i*rameno_uhel+ramena_otoceni])
     translate([blok_vnitrni_prumer/2, 0, 0])
-    translate([rameno_sroub_vzdalenost, 0, -rameno_vybrani_vyska])
+    translate([rameno_sroub_vzdalenost, -rameno_sirka/3, -rameno_sroub_zahloubeni])
+    sroub_m4_otvor_pro_zapusnou_hlavu(delka_sroub = 20, delka_hlava = rameno_vyska);
+    // Sroub 2
+    rotate([0,0,i*rameno_uhel+ramena_otoceni])
+    translate([blok_vnitrni_prumer/2, 0, 0])
+    translate([rameno_sroub_vzdalenost,  rameno_sirka/3, -rameno_sroub_zahloubeni])
     sroub_m4_otvor_pro_zapusnou_hlavu(delka_sroub = 20, delka_hlava = rameno_vyska);
   }
 
@@ -387,8 +438,8 @@ module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
 //blok();
 //ramena();
 
-// %translate([blok_vnitrni_prumer/2, 0, 0])
-//rameno(obrys = 1, zvetseni = 1);
+// translate([blok_vnitrni_prumer/2, 0, 0])
+// rameno(obrys = 0, zvetseni = 1);
 
 // translate([blok_vnitrni_prumer/2, 0, 0])
 //rameno();
