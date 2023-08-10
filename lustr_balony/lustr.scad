@@ -19,7 +19,7 @@ zvetseni_otvoru_3d_tisk = 0.4;
 blok_prumer               = 190;//130;
 blok_vyska                = 35;
 blok_pocet_hran           = 0;
-blok_zaobleni             = 10;
+blok_zaobleni             = 3;
 blok_dno_vyska            = 5;
 
 blok_vnitrni_prumer       = 120;
@@ -47,7 +47,7 @@ rameno_vyska_bez_vybrani  = rameno_vyska - rameno_vybrani_vyska;
 rameno_kruh_poloha        = 90;
 rameno_kruh_prumer        = 130;
 rameno_kruh_prodlouzeni   = 0;
-rameno_kruh_zaobleni      = 10;
+rameno_kruh_zaobleni      = 3;
 
 
 sokl_prumer               = blok_vnitrni_prumer - zvetseni_otvoru_3d_tisk*4;
@@ -250,11 +250,7 @@ module rameno(obrys = 0, zvetseni = 1){
         union(){
           difference(){
             translate([-rameno_prodlouzeni, -rameno_sirka/2-obrys_zvetseni/2, -rameno_vyska-obrys_zvetseni])
-            if (rameno_polomer > 0 && obrys_zvetseni == 0) {
-              cuber(rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2,r=rameno_polomer, dim=2);
-            } else {
-              cube([rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2]);
-            }
+            cube([rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2]);
             // horni seriznuti
             translate([-50, -rameno_sirka/2-10, obrys_zvetseni])
             cube([rameno_delka+100, rameno_sirka+20, rameno_vyska*2]);
@@ -273,14 +269,9 @@ module rameno(obrys = 0, zvetseni = 1){
         if (obrys == 0) {
           // vybrani pro kabel
           translate([-10, -rameno_vybrani_sirka/2, -rameno_vybrani_vyska])
-          cuber(rameno_delka+20, rameno_vybrani_sirka, rameno_vybrani_vyska*2,r=rameno_vybrani_polomer, dim=2);
+          cube([rameno_delka+20, rameno_vybrani_sirka, rameno_vybrani_vyska*2]);
           // zkoseni leveho konce vybrabi pro zaobleni
           translate([0, 0, -rameno_vyska])
-          rotate([0,-45,0])
-          translate([0, -rameno_vybrani_sirka/2, 0])
-          cube([rameno_vyska, rameno_vybrani_sirka, rameno_vyska]);
-          // zkoseni praveho konce vybrabi pro zaobleni
-          translate([rameno_delka, 0, -rameno_vyska])
           rotate([0,-45,0])
           translate([0, -rameno_vybrani_sirka/2, 0])
           cube([rameno_vyska, rameno_vybrani_sirka, rameno_vyska]);
@@ -296,16 +287,6 @@ module rameno(obrys = 0, zvetseni = 1){
         translate([0, -rameno_vybrani_sirka/2-1, -rameno_vyska])
         cube([rameno_vyska_bez_vybrani, rameno_vybrani_sirka+2, rameno_vyska_bez_vybrani]);
       }
-      // zaobleni praveho konce pro kabel
-      intersection(){
-        // zaobleni
-        translate([rameno_delka-rameno_vyska_bez_vybrani, rameno_vybrani_sirka/2+1, -rameno_vyska])
-        rotate([90,0,0])
-        cylinder(r=rameno_vyska_bez_vybrani, h=rameno_vybrani_sirka+2);
-        // orez valce do jednoho kvadrantu
-        translate([rameno_delka-rameno_vyska_bez_vybrani, -rameno_vybrani_sirka/2-1, -rameno_vyska])
-        cube([rameno_vyska_bez_vybrani, rameno_vybrani_sirka+2, rameno_vyska_bez_vybrani]);
-      }
     }
     if (obrys == 0) {
       // otvor pro sroub 1
@@ -315,8 +296,8 @@ module rameno(obrys = 0, zvetseni = 1){
       translate([rameno_sroub_vzdalenost,  rameno_sirka/3, -rameno_sroub_zahloubeni])
       sroub_m4_otvor_pro_valec(delka_sroub = rameno_vyska, delka_hlava = rameno_vyska, zaslepit_pro_3d_tisk = 0);
       // otvor pro kabel
-      translate([rameno_delka, 0, -rameno_vyska*2])
-      cylinder(r=rameno_vybrani_sirka/2, h=rameno_vyska*3);
+      translate([rameno_delka, 0, -rameno_vybrani_vyska])
+      vrtani_zaoblene_vybrani(delka = 50, prumer = rameno_vybrani_sirka, prumer_zaobleni = rameno_vybrani_sirka, prumer_osazeni = rameno_vybrani_sirka*4);
     }
   }
 } // rameno
@@ -392,7 +373,7 @@ module cylinder_with_ball(r=10, h=20){
     sphere(r = r);
   }
 }
-
+/*
 module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
   if (pocet_hran > 2) {
     uhel_krok = 360/pocet_hran;
@@ -415,6 +396,66 @@ module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
     }
   }
 }
+*/
+
+module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
+  if (pocet_hran > 2) {
+//     uhel_krok = 360/pocet_hran;
+//     hull(){
+//       for (i = [0:pocet_hran-1]){
+//         rotate([0,0,uhel_krok*i])
+//         translate([r-r_zaobleni, 0, 0])
+//         cylinder_with_ball(r=r_zaobleni, h=h);
+//       }
+//     }
+  } else {
+    hull(){
+      translate([0, 0, r_zaobleni/2])
+      cylinder(r=r, h=h-r_zaobleni/2);
+      cylinder(r=r-r_zaobleni/2, h=h-r_zaobleni/2);
+    }
+  }
+}
+
+
+module vrtani_zaoblene_vybrani(delka = 50, prumer = 10, prumer_zaobleni = 20, prumer_osazeni = 20){
+  // Vrtak
+  translate([0, 0, -delka])
+  chamfercyl(r=prumer/2, h=delka, b = 0, t = prumer_zaobleni/2, slices = 10);
+  // Osazeni
+  translate([0, 0, -0.001])
+  cylinder(r=prumer_osazeni/2, h=delka+0.001);
+}
+
+
+
+//vrtani_zaoblene_vybrani();
+
+
+// chamfercyl - create a cylinder with round chamfered ends
+module chamfercyl(
+   r,              // cylinder radius
+   h,              // cylinder height
+   b=0,            // bottom chamfer radius (=0 none, >0 outside, <0 inside)
+   t=0,            // top chamfer radius (=0 none, >0 outside, <0 inside)
+   offset=[[0,0]], // optional offsets in X and Y to create
+                   // convex hulls at slice level
+   slices=10,      // number of slices used for chamfering
+   eps=0.01,       // tiny overlap of slices
+){
+    astep=90/slices;
+    hull()for(o = offset)
+       translate([o[0],o[1],abs(b)-eps])cylinder(r=r,h=h-abs(b)-abs(t)+2*eps);
+    if(b)for(a=[0:astep:89.999])hull()for(o = offset)
+       translate([o[0],o[1],abs(b)-abs(b)*sin(a+astep)-eps])
+          cylinder(r2=r+(1-cos(a))*b,r1=r+(1-cos(a+astep))*b,h=(sin(a+astep)-sin(a))*abs(b)+2*eps);
+    if(t)for(a=[0:astep:89.999])hull()for(o = offset)
+       translate([o[0],o[1],h-abs(t)+abs(t)*sin(a)-eps])
+          cylinder(r1=r+(1-cos(a))*t,r2=r+(1-cos(a+astep))*t,h=(sin(a+astep)-sin(a))*abs(t)+2*eps);
+}
+
+
+//chamfercyl(10, 50, 10, 5);
 
 //bajonet_otvor(zvetseni = 0);
 
@@ -445,10 +486,10 @@ intersection(){
     blok(1);
     ramena(0);
   }
-}*/
-
-    blok(0);
-    //ramena(0);
+}
+*/
+blok(0);
+ramena(0);
 
 //srouby();
 
