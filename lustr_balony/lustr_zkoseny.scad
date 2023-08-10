@@ -145,7 +145,6 @@ module blok(zjednoduseny = 0){
     if (blok_pocet_hran > 2){
       if (blok_zaobleni > 0 && zjednoduseny == 0) {
         cylinder_rounded(r=blok_prumer/2, h=blok_vyska, r_zaobleni=blok_zaobleni, pocet_hran = blok_pocet_hran);
-        cylinder(r=blok_prumer/2, h=blok_vyska, $fn=blok_pocet_hran);
       } else {
         cylinder(r=blok_prumer/2, h=blok_vyska, $fn=blok_pocet_hran);
       }
@@ -251,11 +250,11 @@ module rameno(obrys = 0, zvetseni = 1){
         union(){
           difference(){
             translate([-rameno_prodlouzeni, -rameno_sirka/2-obrys_zvetseni/2, -rameno_vyska-obrys_zvetseni])
-//             if (rameno_polomer > 0 && obrys_zvetseni == 0) {
-//               cuber(rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2,r=rameno_polomer, dim=2);
-//             } else {
+            if (rameno_polomer > 0 && obrys_zvetseni == 0) {
+              cuber(rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2,r=rameno_polomer, dim=2);
+            } else {
               cube([rameno_delka+rameno_prodlouzeni, rameno_sirka+obrys_zvetseni, rameno_vyska*2]);
-//             }
+            }
             // horni seriznuti
             translate([-50, -rameno_sirka/2-10, obrys_zvetseni])
             cube([rameno_delka+100, rameno_sirka+20, rameno_vyska*2]);
@@ -460,9 +459,9 @@ module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
 // rameno(obrys = 0, zvetseni = 1);
 
 // translate([blok_vnitrni_prumer/2, 0, 0])
-rameno();
+//rameno();
 
-//blok();
+blok();
 //ramena();
 
 //srouby();
