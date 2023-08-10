@@ -297,7 +297,7 @@ module rameno(obrys = 0, zvetseni = 1){
       sroub_m4_otvor_pro_valec(delka_sroub = rameno_vyska, delka_hlava = rameno_vyska, zaslepit_pro_3d_tisk = 0);
       // otvor pro kabel
       translate([rameno_delka, 0, -rameno_vybrani_vyska])
-      vrtani_zaoblene_vybrani(delka = 50, prumer = rameno_vybrani_sirka, prumer_zaobleni = rameno_vybrani_sirka, prumer_osazeni = rameno_vybrani_sirka*4);
+      vrtani_zaoblene_vybrani(delka = 50, prumer = rameno_vybrani_sirka, prumer_zaobleni = rameno_vybrani_sirka, prumer_osazeni = rameno_vybrani_sirka*8);
     }
   }
 } // rameno
