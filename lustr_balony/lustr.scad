@@ -39,9 +39,9 @@ rameno_vybrani_vyska      = 10;
 rameno_vybrani_sirka      = 8;
 rameno_vybrani_polomer    = 2;
 
-rameno_sroub_zahloubeni   = 5;
+rameno_sroub_zahloubeni   = 10;
 rameno_sroub_vzdalenost   = 10;
-rameno_matka_zahloubeni   = 8;
+rameno_matka_zahloubeni   = 6;
 rameno_vyska_bez_vybrani  = rameno_vyska - rameno_vybrani_vyska;
 
 rameno_kruh_poloha        = 90;
@@ -175,7 +175,7 @@ module blok(zjednoduseny = 0){
         rotate([0,0,180])
         sroub_m4_sroub_matka_bocni_pruchod(sroub_delka                 = 0,
                                            sroub_delka_horni           = 20,
-                                           sroub_delka_spodni          = 6,
+                                           sroub_delka_spodni          = 7,
                                            pruchod_delka               = blok_vnitrni_prumer,
                                            zaslepit_pro_3d_tisk_horni  = 1,
                                            zaslepit_pro_3d_tisk_spodni = 0);
@@ -183,7 +183,7 @@ module blok(zjednoduseny = 0){
         rotate([0,0,180])
         sroub_m4_sroub_matka_bocni_pruchod(sroub_delka                 = 0,
                                            sroub_delka_horni           = 20,
-                                           sroub_delka_spodni          = 6,
+                                           sroub_delka_spodni          = 7,
                                            pruchod_delka               = blok_vnitrni_prumer,
                                            zaslepit_pro_3d_tisk_horni  = 1,
                                            zaslepit_pro_3d_tisk_spodni = 0);
@@ -323,38 +323,28 @@ module rameno(obrys = 0, zvetseni = 1){
 
 
 
-module ramena(){
+module ramena(obrys = 0){
 
   for (i = [0:rameno_pocet-1]){
     rotate([0,0,i*rameno_uhel+ramena_otoceni])
     translate([blok_vnitrni_prumer/2, 0, 0])
-    rameno();
+    rameno(obrys);
   }
 } // ramena
 
 
-module srouby(){
-
+module srouby(delka_sroub = 20, delka_hlava = 4){
   for (i = [0:rameno_pocet-1]){
-    // Sroub 1
     rotate([0,0,i*rameno_uhel+ramena_otoceni])
-    translate([blok_vnitrni_prumer/2, 0, 0])
-    translate([rameno_sroub_vzdalenost, -rameno_sirka/3, -rameno_sroub_zahloubeni])
-    sroub_m4_otvor_pro_zapusnou_hlavu(delka_sroub = 20, delka_hlava = rameno_vyska);
-    // Sroub 2
-    rotate([0,0,i*rameno_uhel+ramena_otoceni])
-    translate([blok_vnitrni_prumer/2, 0, 0])
-    translate([rameno_sroub_vzdalenost,  rameno_sirka/3, -rameno_sroub_zahloubeni])
-    sroub_m4_otvor_pro_zapusnou_hlavu(delka_sroub = 20, delka_hlava = rameno_vyska);
+    union(){
+    // otvor pro sroub 1
+    translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, -rameno_sirka/3, -rameno_sroub_zahloubeni])
+    sroub_m4_otvor_pro_valec(delka_sroub = delka_sroub, delka_hlava = delka_hlava, zaslepit_pro_3d_tisk = 0);
+    // otvor pro sroub 2
+    translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, rameno_sirka/3, -rameno_sroub_zahloubeni])
+    sroub_m4_otvor_pro_valec(delka_sroub = delka_sroub, delka_hlava = delka_hlava, zaslepit_pro_3d_tisk = 0);
+    }
   }
-
-//   for (i = [0:rameno_pocet-1]){
-//     rotate([0,0,i*rameno_uhel+ramena_otoceni])
-//     // otvor pro sroub pro prisroubovani ramena
-//     translate([blok_vnitrni_prumer/2+rameno_sroub_vzdalenost, 0, -rameno_vyska])
-//     sroub_m4_otvor_pro_valec(delka_sroub = blok_vyska-rameno_vyska-1, delka_hlava = rameno_vyska);
-//   }
-
 } // srouby
 
 
@@ -362,25 +352,25 @@ module srouby(){
 
 module bajonet_otvor(zvetseni = 0){
 
-  difference(){
+//  difference(){
     union(){
       bajonet_oblouk(vyska = sokl_vyska, sirka = bajonet_sirka, zvetseni = zvetseni);
-  
-      rotate([0,0,bajonet_zamek_uhel])
-      bajonet_oblouk(vyska = bajonet_vyska + bajonet_zamek_vyska, sirka = bajonet_sirka, zvetseni = zvetseni);
-  
-      for (i = [0:bajonet_zamek_uhel-1]){
+
+//       rotate([0,0,bajonet_zamek_uhel])
+//       bajonet_oblouk(vyska = bajonet_vyska + bajonet_zamek_vyska, sirka = bajonet_sirka, zvetseni = zvetseni);
+
+      for (i = [0:bajonet_zamek_uhel]){
         rotate([0,0,i])
         bajonet_oblouk(vyska = bajonet_vyska, sirka = bajonet_sirka, zvetseni = zvetseni);
       }
     }
 
-    rotate([0,0,5.7])
-    bajonet_oblouk_zaslepeni(vyska = bajonet_vyska, sirka = 0.8, zvetseni = 0.2);
-
-    rotate([0,0,9.6])
-    bajonet_oblouk_zaslepeni(vyska = bajonet_vyska, sirka = 0.8, zvetseni = 0.2);
-  }
+//     rotate([0,0,5.7])
+//     bajonet_oblouk_zaslepeni(vyska = bajonet_vyska, sirka = 0.8, zvetseni = 0.2);
+// 
+//     rotate([0,0,9.6])
+//     bajonet_oblouk_zaslepeni(vyska = bajonet_vyska, sirka = 0.8, zvetseni = 0.2);
+//  }
 }
 
 module bajonet_oblouk(vyska = bajonet_vyska, sirka = bajonet_sirka, zvetseni = 0){
@@ -444,14 +434,27 @@ module cylinder_rounded(r=100, h=20, r_zaobleni=10, pocet_hran = 0){
 // translate([blok_vnitrni_prumer/2, 0, 0])
 //rameno();
 
-blok();
-//ramena();
+//bajonet_otvor(zvetseni = 0);
+
+/*
+intersection(){
+  translate([-30,-100,-70])
+  cube([100,200,100]);
+
+  union(){
+    blok(1);
+    ramena(0);
+  }
+}*/
+
+    blok(0);
+    //ramena(0);
 
 //srouby();
 
 //
 //rotate([0,0,bajonet_zamek_uhel])
 //translate([0, 0, 40])
-//sokl();
+sokl();
 
 
